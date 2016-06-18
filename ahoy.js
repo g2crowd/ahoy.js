@@ -6,7 +6,7 @@
  * MIT License
  */
 
-/* Changes include ahoy.loaded, ahoy.setDefatulProperties, ahoy.host */
+/* Changes include ahoy.start, ahoy.setDefaultProperties */
 /*jslint browser: true, indent: 2, plusplus: true, vars: true */
 
 (function (window) {
@@ -25,7 +25,6 @@
   var page = ahoy.page || window.location.pathname;
   var visitsUrl = ahoy.visitsUrl || "/ahoy/visits";
   var eventsUrl = ahoy.eventsUrl || "/ahoy/events";
-  ahoy.loaded = $.Deferred();
 
   // cookies
 
@@ -107,7 +106,7 @@
       if (canStringify) {
         $.ajax({
           type: "POST",
-          url: ahoy.host + eventsUrl,
+          url: eventsUrl,
           data: JSON.stringify([event]),
           contentType: "application/json; charset=utf-8",
           dataType: "json",
@@ -138,7 +137,9 @@
   }
 
   // main
-  ahoy.loaded.then(function () {
+  ahoy.start = function (properties) {
+    ahoy.setDefaultProperties(properties);
+
     visitId = getCookie("ahoy_visit");
     visitorId = getCookie("ahoy_visitor");
     track = getCookie("ahoy_track");
@@ -183,13 +184,13 @@
 
         log(data);
 
-        $.post(ahoy.host + visitsUrl, data, setReady, "json");
+        $.post(visitsUrl, data, setReady, "json");
       } else {
         log("Cookies disabled");
         setReady();
       }
     }
-  });
+  };
 
   ahoy.getVisitId = ahoy.getVisitToken = function () {
     return visitId;
@@ -282,10 +283,6 @@
 
   ahoy.setDefaultProperties = function(properties) {
     defaultProperties = $.extend(defaultProperties, properties);
-  };
-
-  ahoy.reload = function() {
-    ahoy.loaded = $.Deferred()
   };
 
   // push events from queue
